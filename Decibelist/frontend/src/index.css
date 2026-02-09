@@ -34,7 +34,7 @@
   }
 
   .knob-shell {
-    @apply relative rounded-full shadow-bevel border border-white/10;
+    @apply relative rounded-full shadow-bevel border border-white/10 cursor-pointer select-none touch-none;
     background: radial-gradient(circle at 35% 35%, #444 0%, #23272b 45%, #0f1114 100%),
       conic-gradient(from 220deg, rgba(111, 243, 255, 0.85), rgba(111, 243, 255, 0.2) 25%, rgba(0, 0, 0, 0.2) 45%, rgba(255, 187, 59, 0.7) 70%, rgba(111, 243, 255, 0.85));
   }
@@ -50,6 +50,42 @@
 
   .knob-indicator span {
     @apply block w-1 h-8 rounded-full bg-accent-cyan shadow-glow;
+  }
+
+  .knob-value {
+    @apply text-xs uppercase tracking-[0.2em] text-emerald-200 font-mono;
+  }
+
+  .knob-label {
+    @apply text-xs uppercase tracking-[0.25em] text-slate-400;
+  }
+
+  .segment-group {
+    @apply inline-flex flex-wrap items-center gap-1 rounded-full border border-white/10 bg-black/40 p-1;
+  }
+
+  .segment-group-sm {
+    @apply text-[0.6rem];
+  }
+
+  .segment-group-md {
+    @apply text-xs;
+  }
+
+  .segment-button {
+    @apply rounded-full px-3 py-1 uppercase tracking-[0.2em] text-slate-300 transition;
+  }
+
+  .segment-button-active-cyan {
+    @apply bg-accent-cyan text-slate-900 shadow-glow;
+  }
+
+  .segment-button-active-amber {
+    @apply bg-accent-amber text-slate-900 shadow-glow;
+  }
+
+  .segment-button-active-emerald {
+    @apply bg-emerald-400 text-slate-900 shadow-glow;
   }
 
   .toggle {
@@ -133,5 +169,33 @@
 
   .metal-button:disabled {
     @apply opacity-60;
+  }
+
+  .analysis-chart {
+    @apply h-56;
+  }
+
+  .crt-label {
+    @apply text-xs uppercase tracking-[0.2em] text-emerald-300 mb-2;
+  }
+
+  .spectrum-grid {
+    @apply flex items-end gap-1 h-24;
+  }
+
+  .spectrum-bar {
+    @apply flex-1 rounded-md bg-emerald-400/20 border border-emerald-400/20 transition-all;
+  }
+
+  .spectrum-bar-on {
+    @apply bg-emerald-400 shadow-glow;
+  }
+
+  .job-card {
+    @apply rounded-2xl border border-white/10 bg-black/30 p-4;
+  }
+
+  .job-card-active {
+    @apply border-emerald-400/50 shadow-glow;
   }
 }

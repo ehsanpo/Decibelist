@@ -1,25 +1,45 @@
 package main
 
 import (
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 func (s *AudioService) GetAudioDataURL(path string) (string, error) {
 	if path == "" {
 		return "", errors.New("path is required")
 	}
-	data, err := os.ReadFile(path)
+	absPath, err := filepath.Abs(path)
 	if err != nil {
 		return "", err
 	}
-	mime := mimeFromPath(path)
-	encoded := base64.StdEncoding.EncodeToString(data)
-	return fmt.Sprintf("data:%s;base64,%s", mime, encoded), nil
+	if _, err := os.Stat(absPath); err != nil {
+		return "", err
+	}
+
+	s.mediaMu.Lock()
+	defer s.mediaMu.Unlock()
+
+	if token, ok := s.mediaByPath[absPath]; ok {
+		return fmt.Sprintf("/media/%s", token), nil
+	}
+
+	token := uuid.NewString()
+	s.mediaByPath[absPath] = token
+	s.mediaByToken[token] = absPath
+	return fmt.Sprintf("/media/%s", token), nil
+}
+
+func (s *AudioService) resolveMedia(token string) (string, bool) {
+	s.mediaMu.RLock()
+	defer s.mediaMu.RUnlock()
+	path, ok := s.mediaByToken[token]
+	return path, ok
 }
 
 func mimeFromPath(path string) string {

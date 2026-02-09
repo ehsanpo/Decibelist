@@ -17,12 +17,17 @@ type AudioService struct {
 	mu      sync.Mutex
 	jobs    map[string]*MasteringJob
 	cancels map[string]context.CancelFunc
+	mediaMu      sync.RWMutex
+	mediaByToken map[string]string
+	mediaByPath  map[string]string
 }
 
 func NewAudioService() *AudioService {
 	return &AudioService{
-		jobs:    map[string]*MasteringJob{},
-		cancels: map[string]context.CancelFunc{},
+		jobs:         map[string]*MasteringJob{},
+		cancels:      map[string]context.CancelFunc{},
+		mediaByToken: map[string]string{},
+		mediaByPath:  map[string]string{},
 	}
 }
 

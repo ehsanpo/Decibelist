@@ -1,0 +1,41 @@
+import { MetricRow, SummaryItem } from '../types'
+
+export const demoSummary: SummaryItem[] = [
+  { label: 'Status', value: 'Succeeded' },
+  { label: 'Time', value: '09 Feb 2026 02:08' },
+  { label: 'Length', value: '01:12' },
+  { label: 'Mode', value: 'Custom Mastering' },
+  { label: 'Mastering Algorithm', value: 'v2' },
+  { label: 'Target Loudness', value: '-3.0 dB' },
+  { label: 'Target Loudness Mode', value: 'Loudness' },
+  { label: 'Automatic Mastering', value: 'Enabled' },
+  { label: 'Automatic Mastering Level', value: '0.5' },
+  { label: 'Low Cut Freq', value: '40.00 Hz' },
+  { label: 'High Cut Freq', value: '22000.00 Hz' },
+  { label: 'Ceiling Mode', value: 'True Peak (15kHz Lowpass)' },
+  { label: 'Ceiling', value: '-0.6 dB' },
+  { label: 'Oversampling', value: '1x' },
+  { label: 'Output Format', value: 'WAV (16bit)' },
+  { label: 'Sampling Rate', value: '44100 Hz' },
+  { label: 'Download Full Audio', value: 'Available' },
+  { label: 'Bass Preservation', value: 'Disabled' },
+  { label: 'Limiting Error', value: '2.6 dB' },
+]
+
+export const demoMetrics: MetricRow[] = [
+  { name: 'Loudness', original: '-10.5 dB (71%)', mastered: '-8.1 dB (92%)' },
+  { name: 'RMS', original: '-9.8 dB (95%)', mastered: '-9.2 dB (98%)' },
+  { name: 'Peak', original: '0.0 dB (0%)', mastered: '-3.3 dB (9%)' },
+  { name: 'True Peak', original: '0.5 dB', mastered: '-0.7 dB' },
+  { name: 'True Peak (15kHz lowpass)', original: '0.6 dB', mastered: '-0.6 dB' },
+  { name: 'Loudness Range', original: '8.6 dB (41%)', mastered: '3.3 dB (2%)' },
+  { name: 'YouTube Loudness', original: '-10.1 dB', mastered: '-6.9 dB' },
+  { name: 'YouTube Loudness Compensation', original: '-0.2 dB', mastered: '-3.4 dB' },
+  { name: 'Micro Dynamics', original: '2.8 dB (53%)', mastered: '2.2 dB (25%)' },
+  { name: 'Space', original: '-8.3 dB (50%)', mastered: '-8.6 dB (46%)' },
+  { name: 'Professionality', original: '42 %', mastered: '71 %' },
+  { name: 'Professionality2', original: '10 %', mastered: '50 %' },
+  { name: 'Acoustic Entropy', original: '145 bit', mastered: '178 bit' },
+  { name: 'Ear Damage', original: '23.6 dB', mastered: '19.2 dB' },
+  { name: 'Dissonance', original: '6.05', mastered: '7.85' },
+]
