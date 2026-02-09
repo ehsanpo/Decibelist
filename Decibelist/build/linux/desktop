@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Name=Decibelist
+Comment=Offline AI Mastering
+# The Exec line includes %u to pass the URL to the application
+Exec=/usr/local/bin/decibelist.exe %u
+Terminal=false
+Type=Application
+Icon=decibelist.exe
+Categories=Utility;
+StartupWMClass=decibelist.exe
+
+ 

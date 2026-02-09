@@ -1,0 +1,137 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-rack-base text-slate-100 font-display;
+  }
+}
+
+@layer components {
+  .rack {
+    background-color: #1e2428;
+    background-image:
+      radial-gradient(circle at 10% 10%, rgba(255, 255, 255, 0.08), transparent 35%),
+      radial-gradient(circle at 90% 15%, rgba(111, 243, 255, 0.1), transparent 40%),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(0, 0, 0, 0.3) 45%, rgba(0, 0, 0, 0.7) 100%),
+      repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03) 2px, transparent 2px, transparent 6px);
+    background-blend-mode: screen, screen, multiply, normal;
+  }
+
+  .module {
+    @apply rounded-3xl bg-rack-panel/80 shadow-insetHeavy border border-white/10 backdrop-blur;
+  }
+
+  .module-title {
+    @apply text-sm uppercase tracking-[0.3em] text-slate-300;
+  }
+
+  .knob-shell {
+    @apply relative rounded-full shadow-bevel border border-white/10;
+    background: radial-gradient(circle at 35% 35%, #444 0%, #23272b 45%, #0f1114 100%),
+      conic-gradient(from 220deg, rgba(111, 243, 255, 0.85), rgba(111, 243, 255, 0.2) 25%, rgba(0, 0, 0, 0.2) 45%, rgba(255, 187, 59, 0.7) 70%, rgba(111, 243, 255, 0.85));
+  }
+
+  .knob-cap {
+    @apply absolute inset-2 rounded-full bg-slate-900/70 shadow-insetHeavy border border-white/10;
+  }
+
+  .knob-indicator {
+    @apply absolute left-1/2 top-1/2 w-1 h-8 -translate-x-1/2 -translate-y-1/2;
+    transform: translate(-50%, -50%) rotate(var(--knob-angle, 0deg));
+  }
+
+  .knob-indicator span {
+    @apply block w-1 h-8 rounded-full bg-accent-cyan shadow-glow;
+  }
+
+  .toggle {
+    @apply relative flex h-10 items-center rounded-full border border-white/10 px-1 shadow-insetHeavy bg-rack-edge/80;
+  }
+
+  .toggle-dot {
+    @apply h-8 w-8 rounded-full bg-slate-900 shadow-bevel border border-white/20 transition-all duration-200;
+  }
+
+  .toggle-active .toggle-dot {
+    @apply translate-x-12 bg-accent-cyan shadow-glow;
+  }
+
+  .crt-screen {
+    @apply relative overflow-hidden rounded-2xl bg-black/70 text-emerald-200 font-mono shadow-insetHeavy border border-emerald-400/20;
+  }
+
+  .crt-screen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.04) 2px, transparent 2px, transparent 4px);
+    mix-blend-mode: screen;
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .crt-scanline::before {
+    content: "";
+    position: absolute;
+    inset: -40% 0;
+    background: linear-gradient(transparent, rgba(111, 243, 255, 0.12), transparent);
+    animation: scanline 6s linear infinite;
+    pointer-events: none;
+  }
+
+  .skeuo-slider {
+    @apply w-full h-2 rounded-full bg-rack-edge shadow-insetHeavy;
+    appearance: none;
+  }
+
+  .skeuo-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: radial-gradient(circle at 30% 30%, #fff, #999 45%, #333 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  }
+
+  .skeuo-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: radial-gradient(circle at 30% 30%, #fff, #999 45%, #333 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  }
+
+  .led-grid {
+    @apply grid grid-cols-8 gap-1;
+  }
+
+  .led {
+    @apply h-3 w-3 rounded-full bg-emerald-400/20 border border-emerald-400/20;
+  }
+
+  .led-on {
+    @apply bg-led-green border-led-green shadow-glow;
+  }
+
+  .segment {
+    @apply rounded-lg border border-emerald-500/30 bg-black/60 px-3 py-2 text-emerald-200 font-mono shadow-insetHeavy;
+  }
+
+  .metal-button {
+    @apply rounded-full bg-gradient-to-b from-slate-200/80 to-slate-500/80 text-slate-900 font-semibold px-4 py-2 shadow-bevel border border-white/40;
+  }
+
+  .metal-button:disabled {
+    @apply opacity-60;
+  }
+}

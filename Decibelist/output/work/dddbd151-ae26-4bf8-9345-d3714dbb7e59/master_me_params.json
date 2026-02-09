@@ -1,0 +1,10 @@
+{
+  "autoLevel": 0.5,
+  "ceiling": -0.6,
+  "ceilingMode": "True Peak (15kHz Lowpass)",
+  "highCutHz": 22000,
+  "lowCutHz": 40,
+  "oversampling": "1x",
+  "targetLoudness": -6,
+  "targetLoudnessMode": "Loudness"
+}

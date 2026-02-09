@@ -1,0 +1,200 @@
+{
+  "jobId": "dddbd151-ae26-4bf8-9345-d3714dbb7e59",
+  "generatedAt": "2026-02-09T12:39:55+01:00",
+  "inputPath": "C:\\Users\\Ehsan\\Desktop\\fred stream rip\\katana blade.wav",
+  "outputPath": "C:\\Users\\Ehsan\\dev\\Decibelist\\Decibelist\\output\\mastered.wav",
+  "summary": [
+    {
+      "label": "Status",
+      "value": "Succeeded"
+    },
+    {
+      "label": "Time",
+      "value": "09 Feb 2026 12:39"
+    },
+    {
+      "label": "Mode",
+      "value": "Custom Mastering"
+    },
+    {
+      "label": "Mastering Algorithm",
+      "value": "Hybrid"
+    },
+    {
+      "label": "Target Loudness",
+      "value": "-6.0 dB"
+    },
+    {
+      "label": "Target Loudness Mode",
+      "value": "Loudness"
+    },
+    {
+      "label": "Automatic Mastering",
+      "value": "Enabled"
+    },
+    {
+      "label": "Automatic Mastering Level",
+      "value": "0.50"
+    },
+    {
+      "label": "Low Cut Freq",
+      "value": "40 Hz"
+    },
+    {
+      "label": "High Cut Freq",
+      "value": "22000 Hz"
+    },
+    {
+      "label": "Ceiling Mode",
+      "value": "True Peak (15kHz Lowpass)"
+    },
+    {
+      "label": "Ceiling",
+      "value": "-0.6 dB"
+    },
+    {
+      "label": "Oversampling",
+      "value": "1x"
+    },
+    {
+      "label": "Output Format",
+      "value": "WAV (16bit)"
+    },
+    {
+      "label": "Sampling Rate",
+      "value": "44.1kHz"
+    },
+    {
+      "label": "Bass Preservation",
+      "value": "Disabled"
+    }
+  ],
+  "metrics": [
+    {
+      "name": "Loudness",
+      "original": "-10.0 dB (67%)",
+      "mastered": "-13.3 dB (51%)",
+      "percentOriginal": 67,
+      "percentMastered": 51
+    },
+    {
+      "name": "RMS",
+      "original": "-93.6 dB (0%)",
+      "mastered": "-86.4 dB (0%)",
+      "percentOriginal": 0,
+      "percentMastered": 0
+    },
+    {
+      "name": "Peak",
+      "original": "-90.3 dB (0%)",
+      "mastered": "-76.3 dB (0%)",
+      "percentOriginal": 0,
+      "percentMastered": 0
+    },
+    {
+      "name": "True Peak",
+      "original": "0.50 dB",
+      "mastered": "-0.60 dB",
+      "percentOriginal": 0,
+      "percentMastered": 0
+    },
+    {
+      "name": "True Peak (15kHz lowpass)",
+      "original": "0.30 dB",
+      "mastered": "-0.30 dB",
+      "percentOriginal": 0,
+      "percentMastered": 0
+    },
+    {
+      "name": "Loudness Range",
+      "original": "5.0 dB (25%)",
+      "mastered": "6.3 dB (31%)",
+      "percentOriginal": 25,
+      "percentMastered": 31
+    },
+    {
+      "name": "YouTube Loudness",
+      "original": "-10.0 dB (67%)",
+      "mastered": "-13.3 dB (51%)",
+      "percentOriginal": 67,
+      "percentMastered": 51
+    },
+    {
+      "name": "YouTube Loudness Compensation",
+      "original": "-3.98 dB",
+      "mastered": "-0.67 dB",
+      "percentOriginal": 0,
+      "percentMastered": 0
+    },
+    {
+      "name": "Micro Dynamics",
+      "original": "1.8 dB (22%)",
+      "mastered": "2.3 dB (29%)",
+      "percentOriginal": 22,
+      "percentMastered": 29
+    },
+    {
+      "name": "Space",
+      "original": "93.6 dB (100%)",
+      "mastered": "86.4 dB (100%)",
+      "percentOriginal": 100,
+      "percentMastered": 100
+    },
+    {
+      "name": "Professionality",
+      "original": "81.93 %",
+      "mastered": "52.86 %",
+      "percentOriginal": 0,
+      "percentMastered": 0
+    },
+    {
+      "name": "Professionality2",
+      "original": "73.65 %",
+      "mastered": "19.25 %",
+      "percentOriginal": 0,
+      "percentMastered": 0
+    },
+    {
+      "name": "Acoustic Entropy",
+      "original": "144.81 bit",
+      "mastered": "158.32 bit",
+      "percentOriginal": 0,
+      "percentMastered": 0
+    },
+    {
+      "name": "Ear Damage",
+      "original": "0.00 dB",
+      "mastered": "-125.27 dB",
+      "percentOriginal": 0,
+      "percentMastered": 0
+    },
+    {
+      "name": "Dissonance",
+      "original": "5.00",
+      "mastered": "0.00",
+      "percentOriginal": 0,
+      "percentMastered": 0
+    }
+  ],
+  "diagnostics": {
+    "engine": "hybrid",
+    "binaries": {
+      "essentia/standard_loudnessebur128": true,
+      "ffmpeg/ffmpeg": true,
+      "master_me/master_me": true
+    },
+    "simulated": true,
+    "notes": [
+      "master_me failed, using input audio: master_me CLI args not configured",
+      "Hybrid engine ran in pass-through mode"
+    ],
+    "command": {
+      "path": "C:\\Users\\Ehsan\\dev\\Decibelist\\Decibelist\\tools\\windows\\master_me\\master_me.exe",
+      "args": []
+    }
+  },
+  "warnings": [
+    "master_me failed, using input audio: master_me CLI args not configured",
+    "Hybrid engine ran in pass-through mode"
+  ]
+}
