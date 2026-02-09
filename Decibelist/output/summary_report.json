@@ -1,7 +1,7 @@
 {
-  "jobId": "b325313a-1afe-4234-a202-9acba59b84f3",
-  "generatedAt": "2026-02-09T14:13:11+01:00",
-  "inputPath": "C:\\Users\\Ehsan\\Desktop\\fred stream rip\\what you want me to say.wav",
+  "jobId": "9db67295-9b59-4666-bad9-b3c3b55d83aa",
+  "generatedAt": "2026-02-09T18:44:09+01:00",
+  "inputPath": "C:\\Users\\Ehsan\\Desktop\\fred stream rip\\katana blade.wav",
   "outputPath": "C:\\Users\\Ehsan\\dev\\Decibelist\\Decibelist\\output\\mastered.wav",
   "summary": [
     {
@@ -10,7 +10,7 @@
     },
     {
       "label": "Time",
-      "value": "09 Feb 2026 14:13"
+      "value": "09 Feb 2026 18:44"
     },
     {
       "label": "Mode",
@@ -34,7 +34,7 @@
     },
     {
       "label": "Automatic Mastering Level",
-      "value": "0.97"
+      "value": "0.50"
     },
     {
       "label": "Low Cut Freq",
@@ -54,7 +54,7 @@
     },
     {
       "label": "Oversampling",
-      "value": "2x"
+      "value": "1x"
     },
     {
       "label": "Output Format",
@@ -72,106 +72,106 @@
   "metrics": [
     {
       "name": "Loudness",
-      "original": "-14.0 dB (47%)",
-      "mastered": "-6.0 dB (86%)",
-      "percentOriginal": 47,
-      "percentMastered": 86
+      "original": "-10.0 dB (67%)",
+      "mastered": "-11.5 dB (60%)",
+      "percentOriginal": 67,
+      "percentMastered": 60
     },
     {
       "name": "RMS",
-      "original": "-92.1 dB (0%)",
-      "mastered": "-69.5 dB (0%)",
+      "original": "-93.6 dB (0%)",
+      "mastered": "-56.0 dB (0%)",
       "percentOriginal": 0,
       "percentMastered": 0
     },
     {
       "name": "Peak",
-      "original": "-84.3 dB (0%)",
-      "mastered": "-64.7 dB (0%)",
+      "original": "-90.3 dB (0%)",
+      "mastered": "-50.6 dB (0%)",
       "percentOriginal": 0,
       "percentMastered": 0
     },
     {
       "name": "True Peak",
-      "original": "-1.70 dB",
-      "mastered": "-0.80 dB",
+      "original": "0.50 dB",
+      "mastered": "-0.60 dB",
       "percentOriginal": 0,
       "percentMastered": 0
     },
     {
       "name": "True Peak (15kHz lowpass)",
-      "original": "-1.70 dB",
+      "original": "0.30 dB",
       "mastered": "-0.50 dB",
       "percentOriginal": 0,
       "percentMastered": 0
     },
     {
       "name": "Loudness Range",
-      "original": "5.3 dB (27%)",
-      "mastered": "4.6 dB (23%)",
-      "percentOriginal": 27,
+      "original": "5.0 dB (25%)",
+      "mastered": "4.7 dB (23%)",
+      "percentOriginal": 25,
       "percentMastered": 23
     },
     {
       "name": "YouTube Loudness",
-      "original": "-14.0 dB (47%)",
-      "mastered": "-6.0 dB (86%)",
-      "percentOriginal": 47,
-      "percentMastered": 86
+      "original": "-10.0 dB (67%)",
+      "mastered": "-11.5 dB (60%)",
+      "percentOriginal": 67,
+      "percentMastered": 60
     },
     {
       "name": "YouTube Loudness Compensation",
-      "original": "0.05 dB",
-      "mastered": "-7.99 dB",
+      "original": "-3.98 dB",
+      "mastered": "-2.54 dB",
       "percentOriginal": 0,
       "percentMastered": 0
     },
     {
       "name": "Micro Dynamics",
-      "original": "1.9 dB (23%)",
-      "mastered": "1.6 dB (20%)",
-      "percentOriginal": 23,
-      "percentMastered": 20
+      "original": "1.8 dB (22%)",
+      "mastered": "2.0 dB (25%)",
+      "percentOriginal": 22,
+      "percentMastered": 25
     },
     {
       "name": "Space",
-      "original": "92.1 dB (100%)",
-      "mastered": "-22.8 dB (0%)",
+      "original": "93.6 dB (100%)",
+      "mastered": "19.2 dB (100%)",
       "percentOriginal": 100,
-      "percentMastered": 0
+      "percentMastered": 100
     },
     {
       "name": "Professionality",
-      "original": "48.96 %",
-      "mastered": "66.95 %",
+      "original": "81.93 %",
+      "mastered": "70.95 %",
       "percentOriginal": 0,
       "percentMastered": 0
     },
     {
       "name": "Professionality2",
-      "original": "37.29 %",
-      "mastered": "61.59 %",
+      "original": "73.65 %",
+      "mastered": "56.75 %",
       "percentOriginal": 0,
       "percentMastered": 0
     },
     {
       "name": "Acoustic Entropy",
-      "original": "146.53 bit",
-      "mastered": "139.55 bit",
+      "original": "144.81 bit",
+      "mastered": "149.11 bit",
       "percentOriginal": 0,
       "percentMastered": 0
     },
     {
       "name": "Ear Damage",
       "original": "0.00 dB",
-      "mastered": "0.00 dB",
+      "mastered": "-112.48 dB",
       "percentOriginal": 0,
       "percentMastered": 0
     },
     {
       "name": "Dissonance",
       "original": "5.00",
-      "mastered": "5.00",
+      "mastered": "0.00",
       "percentOriginal": 0,
       "percentMastered": 0
     }
@@ -187,22 +187,22 @@
     "command": {
       "path": "C:\\Users\\Ehsan\\dev\\Decibelist\\Decibelist\\tools\\windows\\phaselimiter\\bin\\phase_limiter.exe",
       "args": [
-        "-input=C:\\Users\\Ehsan\\dev\\Decibelist\\Decibelist\\output\\work\\b325313a-1afe-4234-a202-9acba59b84f3\\input.wav",
-        "-output=C:\\Users\\Ehsan\\dev\\Decibelist\\Decibelist\\output\\work\\b325313a-1afe-4234-a202-9acba59b84f3\\engine.wav",
+        "-input=C:\\Users\\Ehsan\\dev\\Decibelist\\Decibelist\\output\\work\\9db67295-9b59-4666-bad9-b3c3b55d83aa\\input.wav",
+        "-output=C:\\Users\\Ehsan\\dev\\Decibelist\\Decibelist\\output\\work\\9db67295-9b59-4666-bad9-b3c3b55d83aa\\engine.wav",
         "-reference=-6.00",
         "-reference_mode=loudness",
         "-ceiling=-0.60",
         "-ceiling_mode=lowpass_true_peak",
         "-low_cut_freq=40.00",
         "-high_cut_freq=22000.00",
-        "-limiter_internal_oversample=2",
-        "-limiter_external_oversample=2",
+        "-limiter_internal_oversample=1",
+        "-limiter_external_oversample=1",
         "-output_format=wav",
         "-sample_rate=44100",
         "-ffmpeg=C:\\Users\\Ehsan\\dev\\Decibelist\\Decibelist\\tools\\windows\\ffmpeg\\ffmpeg.exe",
         "-quick_exit=true",
         "-mastering_mode=mastering5",
-        "-mastering5_mastering_level=0.97"
+        "-mastering5_mastering_level=0.50"
       ]
     }
   },

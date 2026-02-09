@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import type { MutableRefObject } from 'react'
 import type { ChartOptions } from 'chart.js'
 import { Dialogs, Events } from '@wailsio/runtime'
 import WaveSurfer from 'wavesurfer.js'
@@ -8,10 +9,9 @@ import { JobsRack } from './components/racks/JobsRack'
 import { MasteringRack } from './components/racks/MasteringRack'
 import { PreviewRack } from './components/racks/PreviewRack'
 import { RackTabs } from './components/ui/RackTabs'
-import { demoMetrics, demoSummary } from './data/demo'
-import { MasteringJob } from './types'
+import { MasteringJob, MetricRow, SummaryItem } from './types'
 import { clamp } from './utils/number'
-
+import Fan from './components/svg/fan'
 const engineOptions: { id: MasteringEngine; label: string; detail: string }[] = [
   { id: MasteringEngine.EngineHybrid, label: 'Hybrid', detail: 'Essentia + master_me' },
   { id: MasteringEngine.EngineClassic, label: 'Classic', detail: 'Phaselimiter chain' },
@@ -53,6 +53,10 @@ const rackTabs = [
   { id: 'Jobs', label: 'Jobs Rack' },
 ]
 
+const METER_BANDS = 8
+const SPECTRUM_BANDS = 24
+const SPECTROGRAM_FRAMES = 32
+
 function parseMetricValue(text: string) {
   const match = text.match(/-?\d+(\.\d+)?/)
   if (!match) {
@@ -63,6 +67,74 @@ function parseMetricValue(text: string) {
 
 function clampVolume(value: number) {
   return clamp(value, 0, 1)
+}
+
+type AnalyserKey = 'original' | 'mastered'
+type MediaSourceMap = { original?: MediaElementAudioSourceNode; mastered?: MediaElementAudioSourceNode }
+
+function buildAnalyser(
+  wavesurfer: WaveSurfer | null,
+  key: AnalyserKey,
+  audioContextRef: MutableRefObject<AudioContext | null>,
+  mediaSourceRef: MutableRefObject<MediaSourceMap>
+) {
+  if (!wavesurfer) {
+    return null
+  }
+  const backend = (wavesurfer as unknown as { backend?: any }).backend
+  const analyserFromBackend: AnalyserNode | undefined = backend?.analyser || backend?.analyserNode
+  if (analyserFromBackend) {
+    return analyserFromBackend
+  }
+
+  const media = wavesurfer.getMediaElement?.()
+  if (!(media instanceof HTMLMediaElement)) {
+    return null
+  }
+
+  const audioContext = audioContextRef.current ?? new AudioContext()
+  audioContextRef.current = audioContext
+  if (audioContext.state === 'suspended') {
+    audioContext.resume().catch(() => null)
+  }
+
+  let mediaSource = mediaSourceRef.current[key]
+  if (!mediaSource) {
+    try {
+      mediaSource = audioContext.createMediaElementSource(media)
+      mediaSourceRef.current[key] = mediaSource
+    } catch (error) {
+      console.log(error)
+      return null
+    }
+  }
+
+  const analyser = audioContext.createAnalyser()
+  analyser.fftSize = 2048
+  analyser.smoothingTimeConstant = 0.8
+  try {
+    mediaSource.connect(analyser)
+    analyser.connect(audioContext.destination)
+  } catch (error) {
+    console.log(error)
+  }
+  return analyser
+}
+
+function getBandLevels(analyser: AnalyserNode, bands: number) {
+  const buffer = new Uint8Array(analyser.frequencyBinCount)
+  analyser.getByteFrequencyData(buffer)
+  const bandSize = Math.max(1, Math.floor(buffer.length / bands))
+  return Array.from({ length: bands }, (_, index) => {
+    const start = index * bandSize
+    const end = index === bands - 1 ? buffer.length : start + bandSize
+    let sum = 0
+    for (let i = start; i < end; i += 1) {
+      sum += buffer[i]
+    }
+    const avg = sum / (end - start)
+    return Math.min(1, (avg / 255) * 1.2)
+  })
 }
 
 type RackId = 'Mastering' | 'Preview' | 'Analysis' | 'Jobs'
@@ -92,10 +164,18 @@ function App() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [bypass, setBypass] = useState(false)
   const [knobValues, setKnobValues] = useState({ drive: 62, air: 48, width: 55 })
-  const [meterLevels, setMeterLevels] = useState<number[]>(Array.from({ length: 8 }, () => 0))
-  const [spectrumLevels, setSpectrumLevels] = useState<number[]>(Array.from({ length: 24 }, () => 0))
-  const [summaryItems, setSummaryItems] = useState(demoSummary)
-  const [statsRows, setStatsRows] = useState(demoMetrics)
+  const [meterLevels, setMeterLevels] = useState<number[]>(Array.from({ length: METER_BANDS }, () => 0))
+  const [spectrumOriginalLevels, setSpectrumOriginalLevels] = useState<number[]>(() =>
+    Array.from({ length: SPECTRUM_BANDS }, () => 0)
+  )
+  const [spectrumMasteredLevels, setSpectrumMasteredLevels] = useState<number[]>(() =>
+    Array.from({ length: SPECTRUM_BANDS }, () => 0)
+  )
+  const [limitingErrorHistory, setLimitingErrorHistory] = useState<number[][]>(() =>
+    Array.from({ length: SPECTROGRAM_FRAMES }, () => Array.from({ length: SPECTRUM_BANDS }, () => 0))
+  )
+  const [summaryItems, setSummaryItems] = useState<SummaryItem[]>([])
+  const [statsRows, setStatsRows] = useState<MetricRow[]>([])
   const [jobs, setJobs] = useState<MasteringJob[]>([])
 
   const waveformRef = useRef<HTMLDivElement | null>(null)
@@ -103,6 +183,12 @@ function App() {
   const wavesurferOriginal = useRef<WaveSurfer | null>(null)
   const wavesurferMastered = useRef<WaveSurfer | null>(null)
   const syncingRef = useRef(false)
+  const audioContextRef = useRef<AudioContext | null>(null)
+  const mediaSourceRef = useRef<MediaSourceMap>({})
+  const analyserRef = useRef<{ original: AnalyserNode | null; mastered: AnalyserNode | null }>({
+    original: null,
+    mastered: null,
+  })
   const jobIdRef = useRef('')
   const selectedAudioRef = useRef('')
   const selectedAudioUrlRef = useRef('')
@@ -179,31 +265,58 @@ function App() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (!isPlaying) {
-        setMeterLevels((prev) => prev.map(() => 0))
-        setSpectrumLevels((prev) => prev.map(() => 0))
+      if (!analyserRef.current.original && wavesurferOriginal.current) {
+        analyserRef.current.original = buildAnalyser(
+          wavesurferOriginal.current,
+          'original',
+          audioContextRef,
+          mediaSourceRef
+        )
+      }
+      if (!analyserRef.current.mastered && wavesurferMastered.current) {
+        analyserRef.current.mastered = buildAnalyser(
+          wavesurferMastered.current,
+          'mastered',
+          audioContextRef,
+          mediaSourceRef
+        )
+      }
+
+      const originalAnalyser = analyserRef.current.original
+      const masteredAnalyser = analyserRef.current.mastered
+      if (!isPlaying || !originalAnalyser || !masteredAnalyser) {
+        setMeterLevels(Array.from({ length: METER_BANDS }, () => 0))
         return
       }
-      setMeterLevels((prev) => prev.map(() => Math.min(1, Math.random() * 1.1)))
-      setSpectrumLevels((prev) => prev.map(() => Math.min(1, Math.random() * 1.1)))
+      const originalSpectrum = getBandLevels(originalAnalyser, SPECTRUM_BANDS)
+      const masteredSpectrum = getBandLevels(masteredAnalyser, SPECTRUM_BANDS)
+      setSpectrumOriginalLevels(originalSpectrum)
+      setSpectrumMasteredLevels(masteredSpectrum)
+
+      const activeAnalyser = bypass ? originalAnalyser : masteredAnalyser
+      setMeterLevels(getBandLevels(activeAnalyser, METER_BANDS))
+
+      const diffFrame = originalSpectrum.map((value, index) =>
+        Math.min(1, Math.abs(value - masteredSpectrum[index]) * 1.6)
+      )
+      setLimitingErrorHistory((prev) => {
+        const next = [...prev, diffFrame]
+        if (next.length > SPECTROGRAM_FRAMES) {
+          next.shift()
+        }
+        return next
+      })
     }, 120)
     return () => clearInterval(interval)
-  }, [isPlaying])
+  }, [isPlaying, bypass])
 
   useEffect(() => {
-    if (activeRack !== 'Preview') {
-      wavesurferOriginal.current?.destroy()
-      wavesurferMastered.current?.destroy()
-      wavesurferOriginal.current = null
-      wavesurferMastered.current = null
-      return
-    }
     if (!waveformRef.current || !masteredRef.current) {
       return
     }
-
-    wavesurferOriginal.current?.destroy()
-    wavesurferMastered.current?.destroy()
+    if (wavesurferOriginal.current || wavesurferMastered.current) {
+      return
+    }
 
     const baseOptions = {
       waveColor: '#55b6ff',
@@ -229,6 +342,8 @@ function App() {
 
     wavesurferOriginal.current = original
     wavesurferMastered.current = mastered
+    analyserRef.current.original = buildAnalyser(original, 'original', audioContextRef, mediaSourceRef)
+    analyserRef.current.mastered = buildAnalyser(mastered, 'mastered', audioContextRef, mediaSourceRef)
 
     const syncPlayback = (source: WaveSurfer, target: WaveSurfer) => {
       if (syncingRef.current) {
@@ -269,15 +384,26 @@ function App() {
       setIsPlaying(original.isPlaying() || mastered.isPlaying())
     }
 
+    const ensureAnalysers = () => {
+      if (!analyserRef.current.original) {
+        analyserRef.current.original = buildAnalyser(original, 'original', audioContextRef, mediaSourceRef)
+      }
+      if (!analyserRef.current.mastered) {
+        analyserRef.current.mastered = buildAnalyser(mastered, 'mastered', audioContextRef, mediaSourceRef)
+      }
+    }
+
     original.on('interaction', () => syncSeek(original, mastered))
     mastered.on('interaction', () => syncSeek(mastered, original))
     original.on('play', () => {
+      ensureAnalysers()
       if (!mastered.isPlaying()) {
         mastered.play()
       }
       syncState()
     })
     mastered.on('play', () => {
+      ensureAnalysers()
       if (!original.isPlaying()) {
         original.play()
       }
@@ -297,23 +423,57 @@ function App() {
     })
     original.on('ready', () => syncPlayback(original, mastered))
     mastered.on('ready', () => syncPlayback(mastered, original))
+    original.on('ready', ensureAnalysers)
+    mastered.on('ready', ensureAnalysers)
+    original.on('error', (error) => {
+      setStatus('Preview failed to load')
+      console.log(error)
+    })
+    mastered.on('error', (error) => {
+      setStatus('Preview failed to load')
+      console.log(error)
+    })
 
     original.setVolume(bypass ? 1 : 0)
     mastered.setVolume(bypass ? 0 : 1)
-
-    if (selectedAudioUrl) {
-      original.load(selectedAudioUrl)
-    }
-    if (masteredAudioUrl) {
-      mastered.load(masteredAudioUrl)
-    }
     return () => {
       original.destroy()
       mastered.destroy()
       wavesurferOriginal.current = null
       wavesurferMastered.current = null
+      analyserRef.current.original = null
+      analyserRef.current.mastered = null
+      mediaSourceRef.current = {}
     }
-  }, [activeRack, selectedAudioUrl, masteredAudioUrl])
+  }, [])
+
+  useEffect(() => {
+    const original = wavesurferOriginal.current
+    if (!original) {
+      return
+    }
+    if (!selectedAudioUrl) {
+      return
+    }
+    original.load(selectedAudioUrl).catch((error) => {
+      setStatus('Preview failed to load')
+      console.log(error)
+    })
+  }, [selectedAudioUrl])
+
+  useEffect(() => {
+    const mastered = wavesurferMastered.current
+    if (!mastered) {
+      return
+    }
+    if (!masteredAudioUrl) {
+      return
+    }
+    mastered.load(masteredAudioUrl).catch((error) => {
+      setStatus('Preview failed to load')
+      console.log(error)
+    })
+  }, [masteredAudioUrl])
 
   useEffect(() => {
     const original = wavesurferOriginal.current
@@ -401,6 +561,57 @@ function App() {
       metricMap,
     ]
   )
+
+  const spectrumLabels = useMemo(
+    () => Array.from({ length: SPECTRUM_BANDS }, (_, index) => `${index + 1}`),
+    []
+  )
+
+  const spectrumData = useMemo(
+    () => ({
+      labels: spectrumLabels,
+      datasets: [
+        {
+          label: 'Original',
+          data: spectrumOriginalLevels.map((value) => Math.round(value * 100)),
+          borderColor: '#55b6ff',
+          backgroundColor: 'rgba(85, 182, 255, 0.2)',
+        },
+        {
+          label: 'Mastered',
+          data: spectrumMasteredLevels.map((value) => Math.round(value * 100)),
+          borderColor: '#ffbb3b',
+          backgroundColor: 'rgba(255, 187, 59, 0.2)',
+        },
+      ],
+    }),
+    [spectrumLabels, spectrumOriginalLevels, spectrumMasteredLevels]
+  )
+
+  const spectrumDistributionData = useMemo(() => {
+    const tilt = (levels: number[]) =>
+      levels.map((value, index) => {
+        const factor = 1 + (index / Math.max(1, levels.length - 1)) * 0.35
+        return Math.round(Math.min(1, value * factor) * 100)
+      })
+    return {
+      labels: spectrumLabels,
+      datasets: [
+        {
+          label: 'Original',
+          data: tilt(spectrumOriginalLevels),
+          borderColor: '#55b6ff',
+          backgroundColor: 'rgba(85, 182, 255, 0.15)',
+        },
+        {
+          label: 'Mastered',
+          data: tilt(spectrumMasteredLevels),
+          borderColor: '#ffbb3b',
+          backgroundColor: 'rgba(255, 187, 59, 0.15)',
+        },
+      ],
+    }
+  }, [spectrumLabels, spectrumOriginalLevels, spectrumMasteredLevels])
 
   const histogramData = useMemo(
     () => ({
@@ -524,6 +735,7 @@ function App() {
     if (!original || !mastered) {
       return
     }
+    audioContextRef.current?.resume().catch(() => null)
     const shouldPause = original.isPlaying() || mastered.isPlaying()
     if (shouldPause) {
       original.pause()
@@ -589,6 +801,7 @@ function App() {
             <h1 className="text-4xl font-semibold text-white">Offline AI Mastering Rack</h1>
           </div>
           <div className="segment text-lg">Job {jobId ? jobId.slice(0, 8) : '----'}</div>
+          <Fan />
         </header>
 
         <div className="flex flex-wrap items-center justify-between gap-4">
@@ -596,81 +809,92 @@ function App() {
           <div className="text-xs uppercase tracking-[0.2em] text-slate-400">Rack View</div>
         </div>
 
-        {activeRack === 'Mastering' && (
-          <MasteringRack
-            selectedAudio={selectedAudio}
-            onOpenAudio={openAudio}
-            engine={engine}
-            engineOptions={engineOptions}
-            onEngineChange={setEngine}
-            knobValues={knobValues}
-            onKnobChange={setKnobValues}
-            targetMode={targetMode}
-            targetModeOptions={targetModeOptions}
-            onTargetModeChange={(value) => setTargetMode(value as 'Loudness' | 'YouTube')}
-            targetLoudness={targetLoudness}
-            onTargetLoudnessChange={setTargetLoudness}
-            ceilingMode={ceilingMode}
-            ceilingModeOptions={ceilingModes}
-            onCeilingModeChange={setCeilingMode}
-            ceiling={ceiling}
-            onCeilingChange={setCeiling}
-            oversampling={oversampling}
-            oversamplingOptions={oversamplingOptions}
-            onOversamplingChange={setOversampling}
-            autoMastering={autoMastering}
-            onToggleAutoMastering={() => setAutoMastering((prev) => !prev)}
-            autoLevel={autoLevel}
-            onAutoLevelChange={setAutoLevel}
-            outputFormat={outputFormat}
-            outputFormatOptions={outputFormats}
-            onOutputFormatChange={setOutputFormat}
-            sampleRate={sampleRate}
-            sampleRateOptions={sampleRates}
-            onSampleRateChange={setSampleRate}
-            lowCut={lowCut}
-            onLowCutChange={setLowCut}
-            highCut={highCut}
-            onHighCutChange={setHighCut}
-            preserveBass={preserveBass}
-            onPreserveBassChange={setPreserveBass}
-            progress={progress}
-            status={status}
-            onStartMastering={startMastering}
-          />
-        )}
+        <div className="relative">
+          {activeRack === 'Mastering' && (
+            <MasteringRack
+              selectedAudio={selectedAudio}
+              onOpenAudio={openAudio}
+              engine={engine}
+              engineOptions={engineOptions}
+              onEngineChange={setEngine}
+              knobValues={knobValues}
+              onKnobChange={setKnobValues}
+              targetMode={targetMode}
+              targetModeOptions={targetModeOptions}
+              onTargetModeChange={(value) => setTargetMode(value as 'Loudness' | 'YouTube')}
+              targetLoudness={targetLoudness}
+              onTargetLoudnessChange={setTargetLoudness}
+              ceilingMode={ceilingMode}
+              ceilingModeOptions={ceilingModes}
+              onCeilingModeChange={setCeilingMode}
+              ceiling={ceiling}
+              onCeilingChange={setCeiling}
+              oversampling={oversampling}
+              oversamplingOptions={oversamplingOptions}
+              onOversamplingChange={setOversampling}
+              autoMastering={autoMastering}
+              onToggleAutoMastering={() => setAutoMastering((prev) => !prev)}
+              autoLevel={autoLevel}
+              onAutoLevelChange={setAutoLevel}
+              outputFormat={outputFormat}
+              outputFormatOptions={outputFormats}
+              onOutputFormatChange={setOutputFormat}
+              sampleRate={sampleRate}
+              sampleRateOptions={sampleRates}
+              onSampleRateChange={setSampleRate}
+              lowCut={lowCut}
+              onLowCutChange={setLowCut}
+              highCut={highCut}
+              onHighCutChange={setHighCut}
+              preserveBass={preserveBass}
+              onPreserveBassChange={setPreserveBass}
+              progress={progress}
+              status={status}
+              onStartMastering={startMastering}
+            />
+          )}
 
-        {activeRack === 'Preview' && (
-          <PreviewRack
-            waveformRef={waveformRef}
-            masteredRef={masteredRef}
-            status={status}
-            isPlaying={isPlaying}
-            onTogglePlay={togglePlay}
-            bypass={bypass}
-            onToggleBypass={() => setBypass((prev) => !prev)}
-            meterLevels={meterLevels}
-            masteredReady={Boolean(masteredAudio)}
-            reportReady={Boolean(jobId)}
-            onDownloadMastered={downloadMastered}
-            onDownloadReport={downloadReport}
-          />
-        )}
+          {activeRack === 'Analysis' && (
+            <AnalysisRack
+              summaryItems={summaryItems}
+              statsRows={statsRows}
+              waveformData={waveformData}
+              histogramData={histogramData}
+              spectrumData={spectrumData}
+              spectrumDistributionData={spectrumDistributionData}
+              chartOptions={chartOptions}
+              spectrumOriginalLevels={spectrumOriginalLevels}
+              spectrumMasteredLevels={spectrumMasteredLevels}
+              limitingErrorHistory={limitingErrorHistory}
+            />
+          )}
 
-        {activeRack === 'Analysis' && (
-          <AnalysisRack
-            summaryItems={summaryItems}
-            statsRows={statsRows}
-            waveformData={waveformData}
-            histogramData={histogramData}
-            chartOptions={chartOptions}
-            spectrumLevels={spectrumLevels}
-          />
-        )}
+          {activeRack === 'Jobs' && <JobsRack jobs={jobs} activeJobId={jobId} onLoadJob={loadJob} />}
 
-        {activeRack === 'Jobs' && (
-          <JobsRack jobs={jobs} activeJobId={jobId} onLoadJob={loadJob} />
-        )}
+          <div
+            className={
+              activeRack === 'Preview'
+                ? 'relative'
+                : 'absolute inset-0 pointer-events-none opacity-0'
+            }
+            aria-hidden={activeRack !== 'Preview'}
+          >
+            <PreviewRack
+              waveformRef={waveformRef}
+              masteredRef={masteredRef}
+              status={status}
+              isPlaying={isPlaying}
+              onTogglePlay={togglePlay}
+              bypass={bypass}
+              onToggleBypass={() => setBypass((prev) => !prev)}
+              meterLevels={meterLevels}
+              masteredReady={Boolean(masteredAudio)}
+              reportReady={Boolean(jobId)}
+              onDownloadMastered={downloadMastered}
+              onDownloadReport={downloadReport}
+            />
+          </div>
+        </div>
       </div>
     </div>
   )

@@ -28,6 +28,15 @@ Note:  we can add the textures and more design later after everything is done.
 * [x] **Module - Display:** Use `backdrop-filter: blur` and a "crt-scanline" overlay for the spectrum/waveform screen.
 * [x] **Module - Limiter:** Re-create the requested Limiter/Mastering sliders using physical slider-track styles (Tailwind `shadow-inner`).
 * [x] **Acoustic Stats Panel:** Design a "Grid of LEDs" and vintage "Digital Segment Displays" for metrics (Loudness, Dissonance, etc.).
+* [x] **Rack Tabs:** Add top-level rack navigation to avoid a long single-page UI.
+* [x] **Component Split:** Break frontend into rack + UI components instead of a single file.
+* [x] **Segmented Controls:** Replace dropdowns/selects with capsule segmented controls.
+* [x] **Knob Controls:** Replace sliders with `react-knob-headless` knobs styled to match the rack.
+* [x] **Rack Layout Updates:** Move Automatic Mastering + Start Mastering under Limiter, keep Preview on its own rack.
+* [x] **Jobs Rack:** Add a rack to list and load previous mastering jobs.
+* [x] **Real-time Meters:** Use Web Audio API `AnalyserNode` for LED meters and spectrum instead of mock data.
+* [x] **Missing Analytics Charts:** Add Spectrum, Spectrum Distribution (+3dB/oct), and Limiting Error Spectrogram visuals.
+* [x] **Remove Demo Fallback:** Remove demo summary/metrics once backend data is guaranteed.
 
 
 ---
