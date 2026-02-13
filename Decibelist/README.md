@@ -1,59 +1,71 @@
-# Welcome to Your New Wails3 Project!
+# Decibelist
 
-Congratulations on generating your Wails3 application! This README will guide you through the next steps to get your project up and running.
+Offline AI Mastering and Acoustic Analytics for Desktop.
+
+![Decibelist Logo](frontend/public/favicon.ico)
+
+Decibelist is a professional-grade audio mastering application that works completely offline. It combines advanced AI-driven mastering engines with deep acoustic analytics to help producers achieve commercial-level sound quality without sending data to the cloud.
+
+## Features
+
+- **Dual AI Mastering Engines:**
+  - **Hybrid Engine:** Uses Essentia for feature extraction and `master_me` for intelligent parameter adjustment.
+  - **Classic Engine:** A high-precision `phaselimiter` chain for traditional mastering control.
+- **Deep Acoustic Analytics:**
+  - Real-time spectrum analysis.
+  - LUFS, RMS, and Peak loudness metrics.
+  - Spectral Distribution and Limiting Error Spectrograms.
+  - "Professionality Score" to compare your tracks against industry golden curves.
+- **Precision Controls:**
+  - Target Loudness (Loudness or YouTube modes).
+  - True Peak Ceiling and Oversampling.
+  - Low/High Cut filters.
+  - Automatic mastering with adjustable intensity.
+- **Real-time Preview Rack:**
+  - High-fidelity waveform visualization.
+  - Zero-latency bypass toggle with crossfading for A/B testing.
+  - Skeuomorphic LED peak meters.
+- **Job Management:** Save and reload previous mastering sessions.
+
+## Tech Stack
+
+- **Backend:** Go with Wails 3.
+- **Frontend:** React, TypeScript, and Tailwind CSS.
+- **Audio Engines:** FFmpeg, Essentia, Master_me, and Phaselimiter.
+- **Visualization:** WaveSurfer.js and Chart.js.
 
 ## Getting Started
 
-1. Navigate to your project directory in the terminal.
+### Prerequisites
 
-2. To run your application in development mode, use the following command:
+- [Go](https://golang.org/dl/) 1.21+
+- [Node.js](https://nodejs.org/) & [npm](https://www.npmjs.com/)
+- [Wails v3](https://v3.wails.io/introduction/installation)
 
-   ```
+### Development
+
+1. Clone the repository.
+2. Navigate to the `Decibelist` directory.
+3. Run the application in development mode:
+   ```bash
    wails3 dev
    ```
 
-   This will start your application and enable hot-reloading for both frontend and backend changes.
+### Production Build
 
-3. To build your application for production, use:
-
-   ```
-   wails3 build
-   ```
-
-   This will create a production-ready executable in the `build` directory.
-
-## Exploring Wails3 Features
-
-Now that you have your project set up, it's time to explore the features that Wails3 offers:
-
-1. **Check out the examples**: The best way to learn is by example. Visit the `examples` directory in the `v3/examples` directory to see various sample applications.
-
-2. **Run an example**: To run any of the examples, navigate to the example's directory and use:
-
-   ```
-   go run .
-   ```
-
-   Note: Some examples may be under development during the alpha phase.
-
-3. **Explore the documentation**: Visit the [Wails3 documentation](https://v3.wails.io/) for in-depth guides and API references.
-
-4. **Join the community**: Have questions or want to share your progress? Join the [Wails Discord](https://discord.gg/JDdSxwjhGf) or visit the [Wails discussions on GitHub](https://github.com/wailsapp/wails/discussions).
+To create a production-ready executable:
+```bash
+wails3 build
+```
+The executable will be located in the `bin` directory.
 
 ## Project Structure
 
-Take a moment to familiarize yourself with your project structure:
+- `frontend/`: React frontend application.
+- `tools/`: Static binaries for audio processing engines (FFmpeg, Essentia, etc.).
+- `audio_*.go`: Backend audio processing logic and service implementation.
+- `main.go`: Application entry point and Wails configuration.
 
-- `frontend/`: Contains your frontend code (HTML, CSS, JavaScript/TypeScript)
-- `main.go`: The entry point of your Go backend
-- `app.go`: Define your application structure and methods here
-- `wails.json`: Configuration file for your Wails project
+## License
 
-## Next Steps
-
-1. Modify the frontend in the `frontend/` directory to create your desired UI.
-2. Add backend functionality in `main.go`.
-3. Use `wails3 dev` to see your changes in real-time.
-4. When ready, build your application with `wails3 build`.
-
-Happy coding with Wails3! If you encounter any issues or have questions, don't hesitate to consult the documentation or reach out to the Wails community.
+Copyright © 2026. All rights reserved.
