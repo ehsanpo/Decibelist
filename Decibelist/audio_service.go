@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"path/filepath"
 	"sync"
 	"time"
 
@@ -131,7 +130,7 @@ func (s *AudioService) ExportReport(jobID, destinationPath string) error {
 		return errors.New("job has no result")
 	}
 	if destinationPath == "" {
-		destinationPath = filepath.Join(filepath.Dir(job.Result.OutputPath), "summary_report.json")
+		destinationPath = "summary_report.json"
 	}
 	report := newReport(job, job.InputPath)
 	return WriteSummaryReport(destinationPath, report)

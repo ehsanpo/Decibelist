@@ -9,60 +9,100 @@ import {
   Tooltip,
   type ChartData,
   type ChartOptions,
-} from 'chart.js'
-import { Bar, Line } from 'react-chartjs-2'
-import { MetricRow } from '../ui/MetricRow'
-import { MetricRow as MetricRowType, SummaryItem } from '../../types'
-import { classNames } from '../../utils/classNames'
+} from "chart.js";
+import { useEffect, useRef } from "react";
+import { Bar, Line } from "react-chartjs-2";
+import { MetricRow } from "../ui/MetricRow";
+import { MetricRow as MetricRowType, SummaryItem } from "../../types";
+import type { SpectrogramData } from "../../utils/spectrogram";
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Tooltip, Legend)
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Tooltip,
+  Legend
+);
 
-function SpectrumAnalyzer({ title, levels }: { title: string; levels: number[] }) {
-  return (
-    <div className="mt-6">
-      <div className="crt-label">{title}</div>
-      <div className="spectrum-grid">
-        {levels.map((level, index) => (
-          <div
-            key={index}
-            className={classNames('spectrum-bar', level > 0.2 && 'spectrum-bar-on')}
-            style={{ height: `${Math.max(0.08, Math.min(1, level)) * 100}%` }}
-          />
-        ))}
-      </div>
-    </div>
-  )
+const spectrogramStops = [
+  { stop: 0, color: [8, 5, 18] },
+  { stop: 0.25, color: [40, 16, 68] },
+  { stop: 0.5, color: [120, 32, 88] },
+  { stop: 0.75, color: [220, 76, 66] },
+  { stop: 1, color: [255, 214, 128] },
+];
+
+function lerp(a: number, b: number, t: number) {
+  return a + (b - a) * t;
 }
 
-function LimitingErrorSpectrogram({ history }: { history: number[][] }) {
-  const columns = history[0]?.length ?? 0
-  if (columns === 0) {
-    return (
-      <div className="mt-6">
-        <div className="crt-label">Limiting Error Spectrogram</div>
-        <p className="text-xs text-emerald-200/70">Waiting for limiter data...</p>
-      </div>
-    )
+function colorFromValue(value: number) {
+  const clamped = Math.max(0, Math.min(1, value));
+  for (let i = 0; i < spectrogramStops.length - 1; i += 1) {
+    const current = spectrogramStops[i];
+    const next = spectrogramStops[i + 1];
+    if (clamped >= current.stop && clamped <= next.stop) {
+      const localT = (clamped - current.stop) / (next.stop - current.stop);
+      return [
+        Math.round(lerp(current.color[0], next.color[0], localT)),
+        Math.round(lerp(current.color[1], next.color[1], localT)),
+        Math.round(lerp(current.color[2], next.color[2], localT)),
+      ];
+    }
   }
+  return spectrogramStops[spectrogramStops.length - 1].color;
+}
+
+function SpectrogramCanvas({
+  title,
+  data,
+}: {
+  title: string;
+  data: SpectrogramData | null;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    if (!data || !canvasRef.current) {
+      return;
+    }
+    const canvas = canvasRef.current;
+    const { rows, cols } = data;
+    canvas.width = cols;
+    canvas.height = rows;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      return;
+    }
+    const image = ctx.createImageData(cols, rows);
+    for (let row = 0; row < rows; row += 1) {
+      for (let col = 0; col < cols; col += 1) {
+        const [r, g, b] = colorFromValue(data.data[row][col]);
+        const invertedRow = rows - 1 - row;
+        const index = (invertedRow * cols + col) * 4;
+        image.data[index] = r;
+        image.data[index + 1] = g;
+        image.data[index + 2] = b;
+        image.data[index + 3] = 255;
+      }
+    }
+    ctx.putImageData(image, 0, 0);
+  }, [data]);
+
   return (
-    <div className="mt-6">
-      <div className="crt-label">Limiting Error Spectrogram</div>
-      <div
-        className="spectrogram-grid"
-        style={{ ['--spectrogram-columns' as string]: columns.toString() }}
-      >
-        {history.map((row, rowIndex) =>
-          row.map((value, colIndex) => (
-            <div
-              key={`${rowIndex}-${colIndex}`}
-              className="spectrogram-cell"
-              style={{ opacity: Math.min(1, 0.15 + value * 0.85) }}
-            />
-          ))
-        )}
-      </div>
+    <div className="spectrogram-panel">
+      <div className="crt-label">{title}</div>
+      {!data ? (
+        <p className="text-xs text-emerald-200/70">
+          Waiting for spectrogram analysis...
+        </p>
+      ) : (
+        <canvas ref={canvasRef} className="spectrogram-canvas" />
+      )}
     </div>
-  )
+  );
 }
 
 export function AnalysisRack({
@@ -73,20 +113,20 @@ export function AnalysisRack({
   spectrumData,
   spectrumDistributionData,
   chartOptions,
-  spectrumOriginalLevels,
-  spectrumMasteredLevels,
-  limitingErrorHistory,
+  spectrogramOriginal,
+  spectrogramMastered,
+  limitingErrorSpectrogram,
 }: {
-  summaryItems: SummaryItem[]
-  statsRows: MetricRowType[]
-  waveformData: ChartData<'line'>
-  histogramData: ChartData<'bar'>
-  spectrumData: ChartData<'line'>
-  spectrumDistributionData: ChartData<'line'>
-  chartOptions: ChartOptions<'line' | 'bar'>
-  spectrumOriginalLevels: number[]
-  spectrumMasteredLevels: number[]
-  limitingErrorHistory: number[][]
+  summaryItems: SummaryItem[];
+  statsRows: MetricRowType[];
+  waveformData: ChartData<"line">;
+  histogramData: ChartData<"bar">;
+  spectrumData: ChartData<"line">;
+  spectrumDistributionData: ChartData<"line">;
+  chartOptions: ChartOptions<"line" | "bar">;
+  spectrogramOriginal: SpectrogramData | null;
+  spectrogramMastered: SpectrogramData | null;
+  limitingErrorSpectrogram: SpectrogramData | null;
 }) {
   return (
     <div className="flex flex-col gap-8">
@@ -94,7 +134,9 @@ export function AnalysisRack({
         <div className="flex flex-col gap-5">
           <div className="module-title">Summary</div>
           {summaryItems.length === 0 ? (
-            <p className="text-sm text-slate-400">No summary yet. Run a mastering job to populate this panel.</p>
+            <p className="text-sm text-slate-400">
+              No summary yet. Run a mastering job to populate this panel.
+            </p>
           ) : (
             <div className="grid gap-3">
               {summaryItems.map((item) => (
@@ -112,7 +154,9 @@ export function AnalysisRack({
         <div className="flex flex-col gap-5">
           <div className="module-title">Statistics</div>
           {statsRows.length === 0 ? (
-            <p className="text-sm text-slate-400">No statistics yet. Run a mastering job to populate this panel.</p>
+            <p className="text-sm text-slate-400">
+              No statistics yet. Run a mastering job to populate this panel.
+            </p>
           ) : (
             <>
               <div className="grid grid-cols-3 gap-4 border-b border-white/10 pb-3 text-xs uppercase tracking-[0.2em] text-slate-400">
@@ -121,7 +165,12 @@ export function AnalysisRack({
                 <div>Mastered</div>
               </div>
               {statsRows.map((metric) => (
-                <MetricRow key={metric.name} name={metric.name} original={metric.original} mastered={metric.mastered} />
+                <MetricRow
+                  key={metric.name}
+                  name={metric.name}
+                  original={metric.original}
+                  mastered={metric.mastered}
+                />
               ))}
             </>
           )}
@@ -149,13 +198,22 @@ export function AnalysisRack({
               <Line data={spectrumDistributionData} options={chartOptions} />
             </div>
           </div>
-          <div className="grid gap-4 lg:grid-cols-2">
-            <SpectrumAnalyzer title="Spectrum Analyzer (Original)" levels={spectrumOriginalLevels} />
-            <SpectrumAnalyzer title="Spectrum Analyzer (Mastered)" levels={spectrumMasteredLevels} />
+          <div className="grid gap-4 lg:grid-cols-2 mt-6">
+            <SpectrogramCanvas
+              title="Spectrum Analyzer (Original)"
+              data={spectrogramOriginal}
+            />
+            <SpectrogramCanvas
+              title="Spectrum Analyzer (Mastered)"
+              data={spectrogramMastered}
+            />
           </div>
-          <LimitingErrorSpectrogram history={limitingErrorHistory} />
+          <SpectrogramCanvas
+            title="Limiting Error Spectrogram"
+            data={limitingErrorSpectrogram}
+          />
         </div>
       </section>
     </div>
-  )
+  );
 }

@@ -159,7 +159,6 @@ export class MasteringOptions {
     "sampleRate": string;
     "lowCutHz": number;
     "highCutHz": number;
-    "preserveBass": boolean;
 
     /** Creates a new MasteringOptions instance. */
     constructor($$source: Partial<MasteringOptions> = {}) {
@@ -195,9 +194,6 @@ export class MasteringOptions {
         }
         if (!("highCutHz" in $$source)) {
             this["highCutHz"] = 0;
-        }
-        if (!("preserveBass" in $$source)) {
-            this["preserveBass"] = false;
         }
 
         Object.assign(this, $$source);

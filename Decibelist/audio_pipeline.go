@@ -83,7 +83,11 @@ func (s *AudioService) runEnginePipeline(ctx context.Context, jobID string, req 
 	}
 
 	s.emitProgress(jobID, 72, "Rendering mastered file")
-	outputPath := filepath.Join(outputDir, "mastered."+defaultExtension(req.Options.OutputFormat))
+	inputBase := filepath.Base(req.InputPath)
+	inputExt := filepath.Ext(inputBase)
+	nameWithoutExt := strings.TrimSuffix(inputBase, inputExt)
+	outputName := fmt.Sprintf("%s_Mastered.%s", nameWithoutExt, defaultExtension(req.Options.OutputFormat))
+	outputPath := filepath.Join(outputDir, outputName)
 	if err := finalizeOutput(ctx, normalizedPath, outputPath, req.Options, req.InputPath); err != nil {
 		return nil, err
 	}
@@ -106,7 +110,7 @@ func (s *AudioService) runEnginePipeline(ctx context.Context, jobID string, req 
 		Warnings:    diagnostics.Notes,
 		Diagnostics: diagnostics,
 	}
-	_ = WriteSummaryReport(filepath.Join(outputDir, "summary_report.json"), SummaryReport{
+	_ = WriteSummaryReport(filepath.Join(workDir, "report.json"), SummaryReport{
 		JobID:       jobID,
 		GeneratedAt: time.Now().Format(time.RFC3339),
 		InputPath:   req.InputPath,
@@ -347,7 +351,7 @@ func buildSummary(req MasteringRequest, norm NormalizationResult) []SummaryItem 
 		{Label: "Oversampling", Value: oversampling},
 		{Label: "Output Format", Value: outputLabel},
 		{Label: "Sampling Rate", Value: sampleRate},
-		{Label: "Bass Preservation", Value: boolLabel(req.Options.PreserveBass)},
+
 	}
 }
 

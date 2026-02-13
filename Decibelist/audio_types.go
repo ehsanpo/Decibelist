@@ -26,7 +26,7 @@ type MasteringOptions struct {
 	SampleRate         string  `json:"sampleRate"`
 	LowCutHz           float64 `json:"lowCutHz"`
 	HighCutHz          float64 `json:"highCutHz"`
-	PreserveBass       bool    `json:"preserveBass"`
+
 }
 
 type MasteringJob struct {

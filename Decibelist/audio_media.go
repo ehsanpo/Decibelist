@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"os"
@@ -14,12 +15,26 @@ func (s *AudioService) GetAudioDataURL(path string) (string, error) {
 	if path == "" {
 		return "", errors.New("path is required")
 	}
+	inline := false
+	if strings.HasPrefix(path, "inline:") {
+		inline = true
+		path = strings.TrimPrefix(path, "inline:")
+	}
 	absPath, err := filepath.Abs(path)
 	if err != nil {
 		return "", err
 	}
 	if _, err := os.Stat(absPath); err != nil {
 		return "", err
+	}
+	if inline {
+		data, err := os.ReadFile(absPath)
+		if err != nil {
+			return "", err
+		}
+		mime := mimeFromPath(absPath)
+		encoded := base64.StdEncoding.EncodeToString(data)
+		return fmt.Sprintf("data:%s;base64,%s", mime, encoded), nil
 	}
 
 	s.mediaMu.Lock()
