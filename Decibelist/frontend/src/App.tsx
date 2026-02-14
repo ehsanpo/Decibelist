@@ -1036,15 +1036,10 @@ function App() {
       <div className="mx-auto flex max-w-7xl flex-col gap-4">
         <header className="flex items-center justify-between gap-4 border-b border-white/5 pb-3">
           <div className="flex items-center gap-3">
-            <Fan
-              width={28}
-              height={28}
-              isSpinning={
-                progress > 0 &&
-                progress < 100 &&
-                !status.toLowerCase().includes("error") &&
-                !status.toLowerCase().includes("failed")
-              }
+            <img
+              src="/appicon.png"
+              alt="Decibelist"
+              className="w-[28px] h-[28px] object-contain"
             />
             <div className="flex flex-col">
               <h1 className="text-lg font-bold tracking-tight text-white leading-none">
@@ -1059,6 +1054,16 @@ function App() {
             <div className="segment text-[9px] px-2 py-0.5 opacity-60 font-mono">
               SID:{jobId ? jobId.slice(0, 8) : "---"}
             </div>
+            <Fan
+              width={28}
+              height={28}
+              isSpinning={
+                progress > 0 &&
+                progress < 100 &&
+                !status.toLowerCase().includes("error") &&
+                !status.toLowerCase().includes("failed")
+              }
+            />
           </div>
         </header>
 
