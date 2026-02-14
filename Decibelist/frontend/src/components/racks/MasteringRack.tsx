@@ -49,6 +49,10 @@ export function MasteringRack({
   status,
   onStartMastering,
 
+  selectedAudios,
+  batchProcessedCount,
+  isBatchProcessing,
+
   outputDir,
   onChooseOutputDir,
 }: {
@@ -89,6 +93,10 @@ export function MasteringRack({
   progress: number;
   status: string;
   onStartMastering: () => void;
+
+  selectedAudios: string[];
+  batchProcessedCount: number;
+  isBatchProcessing: boolean;
 
   outputDir: string;
   onChooseOutputDir: () => void;
@@ -238,23 +246,59 @@ export function MasteringRack({
 
       <div className="flex flex-col gap-6">
         <div className="grid gap-3 rounded-2xl border border-white/10 bg-black/30 p-4">
-          <div className="module-title">Mastering Control</div>
-          <div className="flex items-center justify-between text-sm text-slate-300">
-            <span>Status</span>
-            <span className="segment text-xs">{status}</span>
+          <div className="module-title flex justify-between items-center">
+            <span>Mastering Control</span>
+            {isBatchProcessing && (
+              <span className="text-[10px] text-emerald-400 animate-pulse font-mono">
+                BATCH MODE ACTIVE
+              </span>
+            )}
           </div>
-          <div className="grid grid-cols-[1fr_auto] items-center gap-4">
-            <div className="segment">Progress {progress.toFixed(0)}%</div>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between text-sm text-slate-300">
+              <span>Status</span>
+              <span className="segment text-xs truncate max-w-[200px]">
+                {status}
+              </span>
+            </div>
+
+            {(isBatchProcessing || selectedAudios.length > 1) && (
+              <div className="flex items-center justify-between text-sm text-slate-300">
+                <span>Batch Queue</span>
+                <span className="segment text-xs text-emerald-400">
+                  {isBatchProcessing ? batchProcessedCount + 1 : 0} of{" "}
+                  {selectedAudios.length} tracks
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-[1fr_auto] items-center gap-4 mt-2">
+            <div className="segment">
+              {isBatchProcessing ? "Active Task " : "Progress "}
+              {progress.toFixed(0)}%
+            </div>
             <button
-              className="metal-button metal-button-primary"
+              className={classNames(
+                "metal-button metal-button-primary",
+                isBatchProcessing && "opacity-50 cursor-not-allowed"
+              )}
               onClick={onStartMastering}
-              disabled={!outputDir || (progress > 0 && progress < 100)}
+              disabled={
+                !outputDir ||
+                isBatchProcessing ||
+                (progress > 0 && progress < 100)
+              }
               title={
-                !outputDir ? "Please select an output directory first" : ""
+                !outputDir
+                  ? "Please select an output directory first"
+                  : isBatchProcessing
+                  ? "Wait for batch to complete"
+                  : ""
               }
               type="button"
             >
-              Start Mastering
+              {isBatchProcessing ? "Processing Batch..." : "Start Mastering"}
             </button>
           </div>
         </div>
@@ -264,18 +308,21 @@ export function MasteringRack({
           <div className="flex items-center justify-between bg-black/20 rounded-xl p-4 border border-white/5">
             <div className="flex flex-col gap-1 overflow-hidden">
               <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold">
-                Input File
+                {selectedAudios.length > 1 ? "Input Files" : "Input File"}
               </span>
               <p className="text-sm text-slate-300 truncate pr-4">
-                {selectedAudio || "No file selected"}
+                {selectedAudios.length > 1
+                  ? `${selectedAudios.length} tracks selected`
+                  : selectedAudios[0] || "No file selected"}
               </p>
             </div>
             <button
               className="metal-button"
               onClick={onOpenAudio}
               type="button"
+              disabled={isBatchProcessing}
             >
-              {selectedAudio ? "Replace" : "Open File"}
+              {selectedAudios.length > 0 ? "Change" : "Open File(s)"}
             </button>
           </div>
 

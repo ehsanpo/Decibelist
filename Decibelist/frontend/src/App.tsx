@@ -179,6 +179,7 @@ function App() {
   );
   const [selectedAudio, setSelectedAudio] = useState("");
   const [selectedAudioUrl, setSelectedAudioUrl] = useState("");
+  const [selectedAudios, setSelectedAudios] = useState<string[]>([]);
   const [masteredAudio, setMasteredAudio] = useState("");
   const [masteredAudioUrl, setMasteredAudioUrl] = useState("");
   const [targetMode, setTargetMode] = useState<"Loudness" | "YouTube">(
@@ -213,6 +214,8 @@ function App() {
     useState<SpectrogramData | null>(null);
   const [summaryItems, setSummaryItems] = useState<SummaryItem[]>([]);
   const [statsRows, setStatsRows] = useState<MetricRow[]>([]);
+  const [batchProcessedCount, setBatchProcessedCount] = useState(0);
+  const [isBatchProcessing, setIsBatchProcessing] = useState(false);
   const [jobs, setJobs] = useState<MasteringJob[]>([]);
 
   const waveformRef = useRef<HTMLDivElement | null>(null);
@@ -907,14 +910,23 @@ function App() {
 
   const openAudio = async () => {
     const result = await Dialogs.OpenFile({
-      AllowsMultipleSelection: false,
+      AllowsMultipleSelection: true,
       Filters: [
         { DisplayName: "Audio", Pattern: "*.wav;*.mp3;*.flac;*.aiff;*.m4a" },
       ],
-      Title: "Select Audio File",
+      Title: "Select Audio Files",
     });
-    if (typeof result === "string" && result) {
-      setSelectedAudio(result);
+
+    let paths: string[] = [];
+    if (Array.isArray(result)) {
+      paths = result;
+    } else if (typeof result === "string" && result) {
+      paths = [result];
+    }
+
+    if (paths.length > 0) {
+      setSelectedAudios(paths);
+      setSelectedAudio(paths[0]);
       setSelectedAudioUrl("");
       setMasteredAudio("");
       setMasteredAudioUrl("");
@@ -924,7 +936,7 @@ function App() {
       setIsPlaying(false);
       setBypass(false);
       try {
-        const url = await AudioService.GetAudioDataURL(result);
+        const url = await AudioService.GetAudioDataURL(paths[0]);
         setSelectedAudioUrl(url);
       } catch (error) {
         setStatus("Failed to load audio for preview");
@@ -944,20 +956,12 @@ function App() {
     }
   };
 
-  const startMastering = async () => {
-    if (!selectedAudio) {
-      setStatus("Select an audio file first");
-      return;
-    }
-    if (!outputDir) {
-      setStatus("Select an output directory first");
-      return;
-    }
-    setStatus("Starting...");
+  const masterFile = async (filePath: string) => {
+    setStatus(`Mastering: ${filePath.split(/[\/\\]/).pop()}...`);
     setProgress(1);
     try {
       const id = await AudioService.StartMastering({
-        inputPath: selectedAudio,
+        inputPath: filePath,
         outputDir: outputDir,
         engine,
         options: {
@@ -976,9 +980,75 @@ function App() {
       });
       setJobId(id);
       jobIdRef.current = id;
+      return id;
     } catch (error) {
-      setStatus("Failed to start mastering");
       console.log(error);
+      throw error;
+    }
+  };
+
+  const startMastering = async () => {
+    if (selectedAudios.length === 0) {
+      setStatus("Select audio files first");
+      return;
+    }
+    if (!outputDir) {
+      setStatus("Select an output directory first");
+      return;
+    }
+
+    if (selectedAudios.length > 1) {
+      setIsBatchProcessing(true);
+      setBatchProcessedCount(0);
+
+      for (let i = 0; i < selectedAudios.length; i++) {
+        setBatchProcessedCount(i);
+        const file = selectedAudios[i];
+        setSelectedAudio(file);
+
+        // Try to load preview URL for the current file being mastered
+        try {
+          const url = await AudioService.GetAudioDataURL(file);
+          setSelectedAudioUrl(url);
+        } catch (e) {
+          console.error("Failed to load preview for batch file", e);
+        }
+
+        await new Promise<void>((resolve) => {
+          let resolved = false;
+          const cleanup = () => {
+            if (resolved) return;
+            resolved = true;
+            offComplete();
+            offError();
+          };
+
+          const offComplete = Events.On("mastering:complete", () => {
+            cleanup();
+            resolve();
+          });
+
+          const offError = Events.On("mastering:error", () => {
+            cleanup();
+            resolve(); // Continue to next file even on error
+          });
+
+          masterFile(file).catch((err) => {
+            cleanup();
+            resolve();
+          });
+        });
+      }
+
+      setBatchProcessedCount(selectedAudios.length);
+      setIsBatchProcessing(false);
+      setStatus("Batch Processing Complete");
+      setProgress(100);
+    } else {
+      masterFile(selectedAudios[0]).catch((error) => {
+        setStatus("Failed to start mastering");
+        console.log(error);
+      });
     }
   };
 
@@ -1046,6 +1116,25 @@ function App() {
     setIsPlaying(false);
     setBypass(false);
     setActiveRack("Preview");
+  };
+
+  const selectTrack = async (path: string) => {
+    setSelectedAudio(path);
+    setSelectedAudioUrl("");
+    setMasteredAudio("");
+    setMasteredAudioUrl("");
+    setSpectrogramOriginal(null);
+    setSpectrogramMastered(null);
+    setLimitingErrorSpectrogram(null);
+    setIsPlaying(false);
+    setBypass(false);
+    try {
+      const url = await AudioService.GetAudioDataURL(path);
+      setSelectedAudioUrl(url);
+    } catch (error) {
+      setStatus("Failed to load audio for preview");
+      console.log(error);
+    }
   };
 
   return (
@@ -1132,6 +1221,9 @@ function App() {
               progress={progress}
               status={status}
               onStartMastering={startMastering}
+              selectedAudios={selectedAudios}
+              batchProcessedCount={batchProcessedCount}
+              isBatchProcessing={isBatchProcessing}
               outputDir={outputDir}
               onChooseOutputDir={chooseOutputDir}
             />
@@ -1149,6 +1241,10 @@ function App() {
               spectrogramOriginal={spectrogramOriginal}
               spectrogramMastered={spectrogramMastered}
               limitingErrorSpectrogram={limitingErrorSpectrogram}
+              selectedAudios={selectedAudios}
+              selectedAudio={selectedAudio}
+              onSelectTrack={selectTrack}
+              isBatchProcessing={isBatchProcessing}
             />
           )}
 
@@ -1177,6 +1273,10 @@ function App() {
               reportReady={Boolean(jobId)}
               onDownloadMastered={downloadMastered}
               onDownloadReport={downloadReport}
+              selectedAudios={selectedAudios}
+              selectedAudio={selectedAudio}
+              onSelectTrack={selectTrack}
+              isBatchProcessing={isBatchProcessing}
             />
           </div>
         </div>

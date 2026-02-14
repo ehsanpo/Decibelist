@@ -1,6 +1,7 @@
 import type { RefObject } from "react";
 import { VUMeter } from "../ui/VUMeter";
 import { classNames } from "../../utils/classNames";
+import { TrackSelector } from "../ui/TrackSelector";
 
 export function PreviewRack({
   waveformRef,
@@ -15,6 +16,10 @@ export function PreviewRack({
   reportReady,
   onDownloadMastered,
   onDownloadReport,
+  selectedAudios,
+  selectedAudio,
+  onSelectTrack,
+  isBatchProcessing,
 }: {
   waveformRef: RefObject<HTMLDivElement>;
   masteredRef: RefObject<HTMLDivElement>;
@@ -28,6 +33,10 @@ export function PreviewRack({
   reportReady: boolean;
   onDownloadMastered: () => void;
   onDownloadReport: () => void;
+  selectedAudios: string[];
+  selectedAudio: string;
+  onSelectTrack: (path: string) => void;
+  isBatchProcessing: boolean;
 }) {
   return (
     <section className="module grid gap-8 p-8 lg:grid-cols-[1.2fr_0.8fr]">
@@ -82,6 +91,13 @@ export function PreviewRack({
             subLabel="MASTER OUT"
           />
         </div>
+
+        <TrackSelector
+          selectedAudios={selectedAudios}
+          selectedAudio={selectedAudio}
+          onSelectTrack={onSelectTrack}
+          isBatchProcessing={isBatchProcessing}
+        />
 
         <div className="module-title">Download</div>
         <button
