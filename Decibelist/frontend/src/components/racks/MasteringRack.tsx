@@ -167,13 +167,16 @@ export function MasteringRack({
                 <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold mb-1">
                   Loudness Mode
                 </span>
-                <SegmentedControl
-                  value={targetMode}
-                  onChange={onTargetModeChange}
-                  options={targetModeOptions}
-                  size="sm"
-                  tone="cyan"
-                />
+                <div>
+                  {" "}
+                  <SegmentedControl
+                    value={targetMode}
+                    onChange={onTargetModeChange}
+                    options={targetModeOptions}
+                    size="sm"
+                    tone="cyan"
+                  />
+                </div>
               </div>
               <div className="flex justify-center pt-2 border-t border-white/5 mt-1">
                 <KnobControl
@@ -243,7 +246,7 @@ export function MasteringRack({
           <div className="grid grid-cols-[1fr_auto] items-center gap-4">
             <div className="segment">Progress {progress.toFixed(0)}%</div>
             <button
-              className="metal-button disabled:opacity-40"
+              className="metal-button metal-button-primary"
               onClick={onStartMastering}
               disabled={!outputDir || (progress > 0 && progress < 100)}
               title={
@@ -268,7 +271,7 @@ export function MasteringRack({
               </p>
             </div>
             <button
-              className="metal-button text-xs py-1.5 px-4 min-w-[100px]"
+              className="metal-button"
               onClick={onOpenAudio}
               type="button"
             >
@@ -286,7 +289,7 @@ export function MasteringRack({
               </p>
             </div>
             <button
-              className="metal-button text-xs py-1.5 px-4 min-w-[100px]"
+              className="metal-button"
               onClick={onChooseOutputDir}
               type="button"
             >
@@ -302,31 +305,35 @@ export function MasteringRack({
                 <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold">
                   Output Format
                 </span>
-                <SegmentedControl
-                  value={outputFormat}
-                  onChange={onOutputFormatChange}
-                  options={outputFormatOptions.map((f) => ({
-                    value: f.id,
-                    label: f.label,
-                  }))}
-                  size="sm"
-                  tone="cyan"
-                />
+                <div>
+                  <SegmentedControl
+                    value={outputFormat}
+                    onChange={onOutputFormatChange}
+                    options={outputFormatOptions.map((f) => ({
+                      value: f.id,
+                      label: f.label,
+                    }))}
+                    size="sm"
+                    tone="cyan"
+                  />
+                </div>
               </div>
               <div className="flex flex-col gap-2 bg-black/20 rounded-xl p-3 border border-white/5">
                 <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold">
                   Sample Rate
                 </span>
-                <SegmentedControl
-                  value={sampleRate}
-                  onChange={onSampleRateChange}
-                  options={sampleRateOptions.map((r) => ({
-                    value: r.id,
-                    label: r.label,
-                  }))}
-                  size="sm"
-                  tone="cyan"
-                />
+                <div>
+                  <SegmentedControl
+                    value={sampleRate}
+                    onChange={onSampleRateChange}
+                    options={sampleRateOptions.map((r) => ({
+                      value: r.id,
+                      label: r.label,
+                    }))}
+                    size="sm"
+                    tone="cyan"
+                  />
+                </div>
               </div>
             </div>
           </div>

@@ -260,11 +260,72 @@
   }
 
   .metal-button {
-    @apply rounded-full bg-gradient-to-b from-slate-200/80 to-slate-500/80 text-slate-900 font-semibold px-4 py-2 shadow-bevel border border-white/40;
+    @apply relative overflow-hidden rounded-xl text-slate-300 font-bold px-5 py-2.5 border border-white/5 transition-all duration-100 select-none cursor-pointer uppercase tracking-[0.2em] text-[10px];
+    background: linear-gradient(to bottom, #3a3f44 0%, #1c2024 100%);
+    box-shadow:
+      0 4px 0 #0f1113,
+      0 8px 15px rgba(0, 0, 0, 0.5),
+      inset 0 1px 2px rgba(255, 255, 255, 0.08);
+  }
+
+  .metal-button:hover:not(:disabled) {
+    @apply text-white border-white/10;
+    background: linear-gradient(to bottom, #444a50 0%, #24292e 100%);
+    box-shadow:
+      0 4px 0 #0f1113,
+      0 10px 20px rgba(0, 0, 0, 0.6),
+      inset 0 1px 3px rgba(255, 255, 255, 0.12);
+    transform: translateY(-1px);
+  }
+
+  .metal-button:active:not(:disabled) {
+    @apply text-slate-400;
+    background: linear-gradient(to bottom, #16191c 0%, #202428 100%);
+    box-shadow:
+      0 1px 0 #0f1113,
+      0 2px 5px rgba(0, 0, 0, 0.8),
+      inset 0 4px 8px rgba(0, 0, 0, 0.6);
+    transform: translateY(3px);
   }
 
   .metal-button:disabled {
-    @apply opacity-60;
+    @apply opacity-30 cursor-not-allowed grayscale !important;
+    box-shadow: 0 2px 0 #0f1113, inset 0 1px 1px rgba(255, 255, 255, 0.05) !important;
+    transform: translateY(2px) !important;
+  }
+
+  .metal-button-primary {
+    @apply text-emerald-400 border-emerald-500/20;
+    background: linear-gradient(to bottom, #2d3a33 0%, #121815 100%);
+    box-shadow:
+      0 4px 0 #080b09,
+      0 8px 20px rgba(0, 0, 0, 0.6),
+      inset 0 1px 1px rgba(52, 211, 153, 0.1);
+  }
+
+  .metal-button-primary:hover:not(:disabled) {
+    @apply text-emerald-300 border-emerald-400/30;
+    box-shadow:
+      0 4px 0 #080b09,
+      0 0 25px rgba(16, 185, 129, 0.2),
+      inset 0 1px 2px rgba(52, 211, 153, 0.2);
+  }
+
+  .metal-button-primary:active:not(:disabled) {
+    background: linear-gradient(to bottom, #0d1210 0%, #1a231f 100%);
+    box-shadow:
+      0 1px 0 #080b09,
+      inset 0 4px 12px rgba(0, 0, 0, 0.8);
+  }
+
+  .metal-button-active {
+    @apply text-accent-cyan border-cyan-500/30;
+    background: linear-gradient(to bottom, #0f171a 0%, #1a2529 100%) !important;
+    box-shadow:
+      0 1px 0 #0f1113,
+      0 0 20px rgba(111, 243, 255, 0.15),
+      inset 0 4px 12px rgba(0, 0, 0, 0.8) !important;
+    transform: translateY(2px);
   }
 
   .analysis-chart {

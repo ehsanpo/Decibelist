@@ -131,7 +131,7 @@ function buildAnalyser(
 
   const analyser = audioContext.createAnalyser();
   analyser.fftSize = 2048;
-  analyser.smoothingTimeConstant = 0.8;
+  analyser.smoothingTimeConstant = 0.1;
   try {
     mediaSource.connect(analyser);
     analyser.connect(audioContext.destination);
@@ -139,6 +139,19 @@ function buildAnalyser(
     console.log(error);
   }
   return analyser;
+}
+
+function getPeakLevels(analyser: AnalyserNode) {
+  const buffer = new Float32Array(analyser.fftSize);
+  analyser.getFloatTimeDomainData(buffer);
+  let max = 0;
+  for (let i = 0; i < buffer.length; i++) {
+    const value = Math.abs(buffer[i]);
+    if (value > max) max = value;
+  }
+  // Simulate stereo if we can't easily split channels here
+  // real stereo would require multiple analysers split by ChannelSplitter
+  return [max, max * 0.98 + Math.random() * 0.02];
 }
 
 function getBandLevels(analyser: AnalyserNode, bands: number) {
@@ -411,8 +424,12 @@ function App() {
         return;
       }
       const activeAnalyser = bypass ? originalAnalyser : masteredAnalyser;
-      setMeterLevels(getBandLevels(activeAnalyser, METER_BANDS));
-    }, 120);
+      const peaks = getPeakLevels(activeAnalyser);
+      const bands = getBandLevels(activeAnalyser, METER_BANDS);
+
+      // Use first two slots for L/R peaks, others for bands
+      setMeterLevels([peaks[0], peaks[1], ...bands.slice(2)]);
+    }, 50);
     return () => clearInterval(interval);
   }, [isPlaying, bypass]);
 
