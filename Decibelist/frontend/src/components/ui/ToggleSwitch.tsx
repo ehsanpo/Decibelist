@@ -1,20 +1,31 @@
-import { classNames } from '../../utils/classNames'
+import { classNames } from "../../utils/classNames";
 
 export function ToggleSwitch({
   active,
   onToggle,
   label,
 }: {
-  active: boolean
-  onToggle: () => void
-  label: string
+  active: boolean;
+  onToggle: () => void;
+  label: string;
 }) {
   return (
-    <button className="flex items-center gap-4" onClick={onToggle} type="button">
-      <div className={classNames('toggle w-20', active && 'toggle-active')}>
-        <div className="toggle-dot" />
-      </div>
-      <span className="text-sm uppercase tracking-[0.2em] text-slate-200">{label}</span>
-    </button>
-  )
+    <div className="flex flex-col items-center">
+      <button
+        className={classNames(
+          "group relative flex flex-col items-center",
+          active && "rocker-active"
+        )}
+        onClick={onToggle}
+        type="button"
+      >
+        <div className="rocker-housing">
+          <div className="rocker-switch" />
+        </div>
+        <div className="rocker-indicator-lamp" />
+        <div className="rocker-status">{active ? "ON" : "OFF"}</div>
+        <span className="rocker-label">{label}</span>
+      </button>
+    </div>
+  );
 }

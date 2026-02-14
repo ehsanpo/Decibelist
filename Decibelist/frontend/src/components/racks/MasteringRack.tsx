@@ -96,124 +96,139 @@ export function MasteringRack({
   return (
     <section className="module grid gap-8 p-8 lg:grid-cols-[1.15fr_0.85fr]">
       <div className="flex flex-col gap-6">
-        <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/30 p-4">
-          <div>
-            <p className="module-title">Select Audio</p>
-            <p className="text-sm text-slate-300">
-              {selectedAudio || "No audio selected yet."}
-            </p>
-          </div>
-          <button className="metal-button" onClick={onOpenAudio} type="button">
-            Choose File
-          </button>
-        </div>
-
-        <div className="grid gap-4 rounded-2xl border border-white/10 bg-black/30 p-4">
-          <p className="module-title">Mastering Engine</p>
-          <div className="grid gap-3 md:grid-cols-2">
-            {engineOptions.map((option) => (
-              <button
+        <div className="grid gap-4">
+          <p className="module-title px-4">Mastering Engine</p>
+          <div className="engine-selection-grid px-2">
+            {engineOptions.map((option, index) => (
+              <div
                 key={option.id}
                 className={classNames(
-                  "rounded-2xl border border-white/10 p-4 text-left transition",
-                  engine === option.id
-                    ? "bg-emerald-500/20 shadow-glow"
-                    : "bg-white/5"
+                  "engine-deck",
+                  engine === option.id && "engine-deck-active"
                 )}
                 onClick={() => onEngineChange(option.id)}
-                type="button"
               >
-                <p className="text-lg font-semibold text-white">
-                  {option.label}
-                </p>
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-300">
-                  {option.detail}
-                </p>
-              </button>
+                <div className="deck-status-pill">
+                  <div
+                    className="deck-status-fill"
+                    style={{ width: engine === option.id ? "65%" : "5%" }}
+                  ></div>
+                </div>
+
+                <div className="disc-viewport">
+                  <div className="disc-body" />
+                  <div className="disc-label-ring" />
+                  <div className="disc-core">
+                    <div className="disc-core-hole" />
+                  </div>
+                </div>
+
+                <div className="deck-cover-plate">
+                  <h3 className="deck-brand">{option.label}</h3>
+                  <p className="deck-sub-label">{option.detail}</p>
+                </div>
+
+                <div className="deck-side-details">
+                  <span>MOD 0{index + 1}</span>
+                  <span>{option.label.toUpperCase()}</span>
+                </div>
+              </div>
             ))}
           </div>
         </div>
-        <div className="grid gap-4 rounded-2xl border border-white/10 bg-black/30 p-4">
-          <div className="module-title">Automatic Mastering</div>
-          <div className="flex items-center justify-between">
+        <div className="grid gap-4 rounded-2xl border border-white/10 bg-black/30 p-8">
+          <div className="module-title mb-4">Automatic Mastering</div>
+          <div className="flex gap-16 items-end justify-center px-2">
             <ToggleSwitch
               active={autoMastering}
               onToggle={onToggleAutoMastering}
-              label="Enabled"
+              label="Auto Engine"
             />
-            <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
-              Level {autoLevel.toFixed(2)}
-            </div>
+            <KnobControl
+              label="Mastering Intensity"
+              value={autoLevel}
+              min={0}
+              max={1}
+              step={0.01}
+              onChange={onAutoLevelChange}
+              size="sm"
+              tone="emerald"
+              formatValue={(value) => `${(value * 100).toFixed(0)}%`}
+            />
           </div>
-          <KnobControl
-            label="Auto Level"
-            value={autoLevel}
-            min={0}
-            max={1}
-            step={0.01}
-            onChange={onAutoLevelChange}
-            size="sm"
-            tone="emerald"
-            formatValue={(value) => value.toFixed(2)}
-          />
         </div>
-        <div className="grid gap-6 rounded-2xl border border-white/10 bg-black/30 p-4">
-          <div>
-            <p className="module-title">Export Settings</p>
-            <div className="mt-3 grid gap-3">
-              <div className="flex items-center justify-between text-sm text-slate-300">
-                <span>Output Format</span>
+        <div className="grid gap-3 rounded-2xl border border-white/10 bg-black/30 p-5">
+          <div className="module-title mb-1">Limiter</div>
+
+          <div className="grid grid-cols-2 gap-3">
+            {/* Target Loudness Group */}
+            <div className="flex flex-col gap-2 bg-black/20 rounded-xl p-3 border border-white/5">
+              <div className="flex flex-col gap-1">
+                <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold mb-1">
+                  Loudness Mode
+                </span>
                 <SegmentedControl
-                  value={outputFormat}
-                  onChange={onOutputFormatChange}
-                  options={outputFormatOptions.map((format) => ({
-                    value: format.id,
-                    label: format.label,
-                  }))}
+                  value={targetMode}
+                  onChange={onTargetModeChange}
+                  options={targetModeOptions}
                   size="sm"
                   tone="cyan"
                 />
               </div>
-              <div className="flex items-center justify-between text-sm text-slate-300">
-                <span>Sampling Rate</span>
+              <div className="flex justify-center pt-2 border-t border-white/5 mt-1">
+                <KnobControl
+                  label="Target"
+                  value={targetLoudness}
+                  min={-12}
+                  max={-3}
+                  step={0.1}
+                  unit="dB"
+                  onChange={onTargetLoudnessChange}
+                  size="sm"
+                />
+              </div>
+            </div>
+
+            {/* Ceiling Group */}
+            <div className="flex flex-col gap-2 bg-black/20 rounded-xl p-3 border border-white/5">
+              <div className="flex flex-col gap-1">
+                <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold mb-1">
+                  Ceiling Mode
+                </span>
                 <SegmentedControl
-                  value={sampleRate}
-                  onChange={onSampleRateChange}
-                  options={sampleRateOptions.map((rate) => ({
-                    value: rate.id,
-                    label: rate.label,
-                  }))}
+                  value={ceilingMode}
+                  onChange={onCeilingModeChange}
+                  options={ceilingModeOptions}
                   size="sm"
                   tone="cyan"
+                />
+              </div>
+              <div className="flex justify-center pt-2 border-t border-white/5 mt-1">
+                <KnobControl
+                  label="Ceiling"
+                  value={ceiling}
+                  min={-1}
+                  max={0}
+                  step={0.1}
+                  unit="dBFS"
+                  onChange={onCeilingChange}
+                  size="sm"
                 />
               </div>
             </div>
           </div>
 
-          <div>
-            <p className="module-title">Filtering</p>
-            <div className="mt-3 grid gap-6 sm:grid-cols-2">
-              <KnobControl
-                label="Low Cut"
-                value={lowCut}
-                min={0}
-                max={40}
-                step={1}
-                unit="Hz"
-                onChange={onLowCutChange}
-                size="sm"
-              />
-              <KnobControl
-                label="High Cut"
-                value={highCut}
-                min={18000}
-                max={22000}
-                step={100}
-                onChange={onHighCutChange}
-                size="sm"
-                formatValue={(value) => `${value.toFixed(0)} Hz`}
-              />
-            </div>
+          <div className="flex items-center justify-between bg-black/20 rounded-xl px-4 py-2 border border-white/5 mt-1">
+            <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold">
+              Oversampling
+            </span>
+            <SegmentedControl
+              value={oversampling}
+              onChange={onOversamplingChange}
+              options={oversamplingOptions}
+              size="sm"
+              tone="amber"
+            />
           </div>
         </div>
       </div>
@@ -240,75 +255,106 @@ export function MasteringRack({
             </button>
           </div>
         </div>
-        <div className="grid gap-3 rounded-2xl border border-white/10 bg-black/30 p-4">
-          <p className="module-title">Save Location</p>
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex flex-col overflow-hidden">
-              <span className="text-[10px] uppercase tracking-wider text-slate-500">
-                Target Folder
+        <div className="grid gap-3 rounded-2xl border border-white/10 bg-black/30 p-5">
+          <div className="module-title mb-1">File Management</div>
+
+          <div className="flex items-center justify-between bg-black/20 rounded-xl p-4 border border-white/5">
+            <div className="flex flex-col gap-1 overflow-hidden">
+              <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold">
+                Input File
               </span>
-              <span className="truncate text-sm text-slate-300">
-                {outputDir || "Same as original file"}
-              </span>
+              <p className="text-sm text-slate-300 truncate pr-4">
+                {selectedAudio || "No file selected"}
+              </p>
             </div>
             <button
-              className="metal-button text-xs py-1.5 px-3 min-w-[100px]"
+              className="metal-button text-xs py-1.5 px-4 min-w-[100px]"
+              onClick={onOpenAudio}
+              type="button"
+            >
+              {selectedAudio ? "Replace" : "Open File"}
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between bg-black/20 rounded-xl p-4 border border-white/5">
+            <div className="flex flex-col gap-1 overflow-hidden">
+              <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold">
+                Export Destination
+              </span>
+              <p className="text-sm text-slate-300 truncate pr-4">
+                {outputDir || "Default (Same as source)"}
+              </p>
+            </div>
+            <button
+              className="metal-button text-xs py-1.5 px-4 min-w-[100px]"
               onClick={onChooseOutputDir}
               type="button"
             >
-              Change
+              Set Folder
             </button>
           </div>
         </div>
-        <div className="grid gap-5 rounded-2xl border border-white/10 bg-black/30 p-4">
-          <div className="module-title">Limiter</div>
-          <div className="flex items-center justify-between text-sm text-slate-300">
-            <span>Target Loudness Mode</span>
-            <SegmentedControl
-              value={targetMode}
-              onChange={onTargetModeChange}
-              options={targetModeOptions}
-              size="sm"
-              tone="cyan"
-            />
+        <div className="grid gap-4 rounded-2xl border border-white/10 bg-black/30 p-5">
+          <div>
+            <p className="module-title mb-3">Export Settings</p>
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-2 bg-black/20 rounded-xl p-3 border border-white/5">
+                <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold">
+                  Output Format
+                </span>
+                <SegmentedControl
+                  value={outputFormat}
+                  onChange={onOutputFormatChange}
+                  options={outputFormatOptions.map((f) => ({
+                    value: f.id,
+                    label: f.label,
+                  }))}
+                  size="sm"
+                  tone="cyan"
+                />
+              </div>
+              <div className="flex flex-col gap-2 bg-black/20 rounded-xl p-3 border border-white/5">
+                <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold">
+                  Sample Rate
+                </span>
+                <SegmentedControl
+                  value={sampleRate}
+                  onChange={onSampleRateChange}
+                  options={sampleRateOptions.map((r) => ({
+                    value: r.id,
+                    label: r.label,
+                  }))}
+                  size="sm"
+                  tone="cyan"
+                />
+              </div>
+            </div>
           </div>
-          <KnobControl
-            label="Target Loudness"
-            value={targetLoudness}
-            min={-12}
-            max={-3}
-            step={0.1}
-            unit="dB"
-            onChange={onTargetLoudnessChange}
-          />
-          <div className="flex items-center justify-between text-sm text-slate-300">
-            <span>Ceiling Mode</span>
-            <SegmentedControl
-              value={ceilingMode}
-              onChange={onCeilingModeChange}
-              options={ceilingModeOptions}
-              size="sm"
-              tone="cyan"
-            />
-          </div>
-          <KnobControl
-            label="Ceiling"
-            value={ceiling}
-            min={-1}
-            max={0}
-            step={0.1}
-            unit="dBFS"
-            onChange={onCeilingChange}
-          />
-          <div className="flex items-center justify-between text-sm text-slate-300">
-            <span>Oversampling</span>
-            <SegmentedControl
-              value={oversampling}
-              onChange={onOversamplingChange}
-              options={oversamplingOptions}
-              size="sm"
-              tone="amber"
-            />
+
+          <div className="pt-4">
+            <p className="module-title mb-3">Filtering</p>
+            <div className="grid grid-cols-2 gap-3 bg-black/20 rounded-xl p-4 border border-white/5">
+              <KnobControl
+                label="Low Cut"
+                value={lowCut}
+                min={0}
+                max={40}
+                step={1}
+                unit="Hz"
+                onChange={onLowCutChange}
+                size="sm"
+              />
+              <KnobControl
+                label="High Cut"
+                value={highCut}
+                min={18000}
+                max={22000}
+                step={100}
+                onChange={onHighCutChange}
+                size="sm"
+                formatValue={(value) => `${value.toFixed(0)} Hz`}
+              />
+            </div>
           </div>
         </div>
       </div>
